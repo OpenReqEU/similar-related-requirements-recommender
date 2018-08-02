@@ -15,7 +15,7 @@ class Requirement(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: int=None, title: str=None, description: str=None):  # noqa: E501
+    def __init__(self, id: int=None, title: str=None, description: str=None, predict: bool=False):  # noqa: E501
         """Requirement - a model defined in Swagger
 
         :param id: The id of this Requirement.  # noqa: E501
@@ -24,22 +24,32 @@ class Requirement(Model):
         :type title: str
         :param description: The description of this Requirement.  # noqa: E501
         :type description: str
+        :param predict: The predict attribute of this Requirement.  # noqa: E501
+        :type predict: bool
+        :param predictions: The predicted similar requirements of this Requirement.  # noqa: E501
+        :type predictions: List[int]
         """
         self.swagger_types = {
             'id': int,
             'title': str,
-            'description': str
+            'description': str,
+            'predict': bool,
+            'predictions': list
         }
 
         self.attribute_map = {
             'id': 'id',
             'title': 'title',
-            'description': 'description'
+            'description': 'description',
+            'predict': 'predict',
+            'predictions': 'predictions'
         }
 
         self._id = id
         self._title = title
         self._description = description
+        self._predict = predict
+        self._predictions = []
 
     @classmethod
     def from_dict(cls, dikt) -> 'Requirement':
@@ -114,3 +124,45 @@ class Requirement(Model):
         """
 
         self._description = description
+
+    @property
+    def predict(self) -> bool:
+        """Gets the predict attribute of this Requirement.
+
+
+        :return: The predict attribute of this Requirement.
+        :rtype: bool
+        """
+        return self._predict
+
+    @predict.setter
+    def predict(self, predict: bool):
+        """Sets the predict attribute of this Requirement.
+
+
+        :param predict: The predict attribute of this Requirement.
+        :type predict: bool
+        """
+
+        self._predict = predict
+
+    @property
+    def predictions(self) -> []:
+        """Gets the predictions of this Requirement.
+
+
+        :return: The predictions of this Requirement.
+        :rtype: List[Requirement]
+        """
+        return self._predictions
+
+    @predictions.setter
+    def predictions(self, predictions: list):
+        """Sets the predict attribute of this Requirement.
+
+
+        :param predictions: The predictions similar requirements list attribute of this Requirement.
+        :type predictions: List[int]
+        """
+
+        self._predictions = predictions

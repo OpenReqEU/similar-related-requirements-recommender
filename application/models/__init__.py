@@ -4,4 +4,3 @@
 from __future__ import absolute_import
 # import models into model package
 from application.models.requirement import Requirement
-from application.models.requirement_popularity import RequirementPopularity

@@ -61,5 +61,11 @@ definitions:
         type: "string"
       description:
         type: "string"
+      predict:
+        type: "boolean"
+      predictions:
+        type: "array"
+        items:
+          $ref: "#/definitions/Requirement"
     xml:
       name: "requirement"

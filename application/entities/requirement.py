@@ -16,7 +16,7 @@ class Requirement(object):
         self.description_tokens_pos_tags = []
 
     def tokens(self, title_weight=1, description_weight=1):
-        return (self.title_tokens * title_weight) + (self.description_tokens * description_weight)
+        return (list(self.title_tokens) * title_weight) + (list(self.description_tokens) * description_weight)
 
     def pos_tokens(self, weight=1):
         return (map(lambda p: p[1], self.title_tokens_pos_tags) * weight)\

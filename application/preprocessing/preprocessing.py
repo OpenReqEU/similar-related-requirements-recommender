@@ -142,15 +142,13 @@ def _remove_abbreviations(requirements):
 def preprocess_requirements(requirements, enable_pos_tagging=False, enable_lemmatization=False, enable_stemming=False):
     _logger.info("Preprocessing requirements")
     requirements = list(requirements)
-    assert(not enable_lemmatization or enable_pos_tagging, "Lemmatization enabled but POS tagging not! Lemmatization requires POS tagging!")
-    assert(not enable_lemmatization or not enable_stemming, "Lemmatization and Stemming are both enabled! Using both is not meaningful!")
     assert(isinstance(requirements, list))
-    assert(len(requirements) > 0, "No requirements given. All requirements have been filtered out. Please check your parameters!")
+    assert(len(requirements) > 0)
 
     _to_lower_case(requirements)
     _replace_german_umlauts(requirements)
     _remove_abbreviations(requirements)
-    all_requirement_titles = map(lambda requirement: requirement.title, requirements)
+    all_requirement_titles = list(map(lambda requirement: requirement.title, requirements))
     important_key_words = tokenizer.key_words_for_tokenization(all_requirement_titles)
     _logger.info("Number of key words {} (altogether)".format(len(important_key_words)))
     tokenizer.tokenize_requirements(requirements, important_key_words)
@@ -158,12 +156,10 @@ def preprocess_requirements(requirements, enable_pos_tagging=False, enable_lemma
     filters.filter_tokens(requirements, important_key_words)
     stopwords.remove_stopwords(requirements)
 
-    #replace_adjacent_token_synonyms_and_remove_adjacent_stopwords(posts)
-
     #-----------------------------------------------------------------------------------------------
     # NOTE: Both NLTK and Stanford POS-tagging is not working as good as expected, because we are
     #       getting a lot of wrong tags (e.g. NN instead of VB).
-    #       -> Outlook: use supervised POS-tagging (very time consuming to
+    #       -> Outlook: use unsupervised POS-tagging (very time consuming to
     #                   manually label enough training data...)
     #-----------------------------------------------------------------------------------------------
     if enable_pos_tagging is True:
@@ -185,6 +181,6 @@ def preprocess_requirements(requirements, enable_pos_tagging=False, enable_lemma
     n_filtered_tokens = n_tokens - reduce(lambda x, y: x + y, map(lambda t: len(list(t.title_tokens)) + len(list(t.description_tokens)), requirements))
     if n_tokens > 0:
         _logger.info("Removed {} ({}%) of {} tokens (altogether)".format(n_filtered_tokens,
-                        round(float(n_filtered_tokens) / n_tokens * 100.0, 2), n_tokens))
+                     round(float(n_filtered_tokens) / n_tokens * 100.0, 2), n_tokens))
     return requirements
 

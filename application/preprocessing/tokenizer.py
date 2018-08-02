@@ -20,7 +20,7 @@ def key_words_for_tokenization(all_requirement_titles):
 
 
 def tokenize_requirements(requirements, important_key_words):
-    '''
+    """
 
         Customized tokenizer for our special needs.
         Unfortunately, many tokenizers out there are not aware of technical terms like C#, C++,
@@ -39,7 +39,7 @@ def tokenize_requirements(requirements, important_key_words):
         NOTE: In order to ensure that our tokenizer is working correct, we have created many
               unit-testcases for this python-module (see: "tests"-folder of this project)
 
-    '''
+    """
     _logger.info("Tokenizing requirements")
     assert(isinstance(requirements, list))
     assert(isinstance(important_key_words, list))
@@ -64,10 +64,10 @@ def tokenize_requirements(requirements, important_key_words):
 
     def _tokenize_text(s, sorted_important_words_to_keep, split_important_words_re):
         def _pre_tokenize_important_words(chunks, sorted_important_words_to_keep, split_important_words_re):
-            '''
+            """
                 Only looks and tokenizes for important words.
                 The rest remains untokenized.
-            '''
+            """
             assert(len(sorted_important_words_to_keep) > 0)
             new_chunks = []
             for chunk in chunks:
@@ -133,10 +133,10 @@ def tokenize_requirements(requirements, important_key_words):
 
         # pre- and append single whitespace character before and at the end of the string
         # This really makes the regular expressions a bit less complex
-        s = ' {} '.format(s.lower()) # also lower case all letters
+        s = " {} ".format(s.lower()) # also lower case all letters
 
         # remove unicode characters
-        s = unicodedata.normalize('NFKD', s).encode('ascii', 'ignore')
+        s = unicodedata.normalize("NFKD", s).encode('ascii', 'ignore').decode("utf-8")
 
         # manually replace those emoticons/smilies not handled by regex:
         s = str(s)
@@ -146,7 +146,7 @@ def tokenize_requirements(requirements, important_key_words):
         s = s.replace(':-p', '')
 
         # split words by '_'
-        s = ' '.join(s.split('_'))
+        s = " ".join(s.split("_"))
 
         # tokenize
         tokens = tokenize(s, sorted_important_words_to_keep, split_important_words_re)
@@ -158,9 +158,11 @@ def tokenize_requirements(requirements, important_key_words):
         tokens = map(remove_all_tailing_punctuation_characters, tokens)
 
         # finally remove empty tokens
-        return filter(lambda t: len(t) > 0, tokens)
+        return list(filter(lambda t: len(t) > 0, tokens))
 
     for requirement in requirements:
-        requirement.title_tokens = _tokenize_text(requirement.title, sorted_important_key_words_to_keep, split_important_words_re)
-        requirement.description_tokens = _tokenize_text(requirement.description, sorted_important_key_words_to_keep, split_important_words_re)
+        requirement.title_tokens = _tokenize_text(requirement.title, sorted_important_key_words_to_keep,
+                                                  split_important_words_re)
+        requirement.description_tokens = _tokenize_text(requirement.description, sorted_important_key_words_to_keep,
+                                                        split_important_words_re)
 

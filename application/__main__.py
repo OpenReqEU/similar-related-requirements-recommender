@@ -2,6 +2,7 @@
 
 import connexion
 from application import encoder
+from application.controllers import recommendation_controller
 
 
 def main():
@@ -11,5 +12,11 @@ def main():
     app.run(port=9003)
 
 
+def test_svd():
+    print('Test SVD')
+    recommendation_controller.perform_svd()
+
+
 if __name__ == '__main__':
     main()
+    #test_svd()
