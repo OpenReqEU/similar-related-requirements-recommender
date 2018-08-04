@@ -23,7 +23,7 @@ def replace_adjacent_token_synonyms_and_remove_adjacent_stopwords(posts):
         and replaces the synonyms according to the synonym list.
 
         Note: Synonyms that are assigned to no/empty target word in the list are considered
-              as 2- or 3-gram stopwords and removed.
+              as 2- or 3-gram stopwords_en and removed.
 
         The synonym list mainly covers the most frequent 1-gram, 2-gram and 3-grams
         of the whole 'programmers.stackexchange.com' dataset (after our tokenization,
@@ -131,7 +131,7 @@ def _replace_german_umlauts(requirements):
         requirement.description = helper.replace_german_umlaut(requirement.description)
 
 
-def _remove_abbreviations(requirements):
+def _remove_german_abbreviations(requirements):
     _logger.info("Remove abbreviations")
     for requirement in requirements:
         assert(isinstance(requirement, Requirement))
@@ -139,22 +139,38 @@ def _remove_abbreviations(requirements):
         requirement.description = requirement.description.replace('z.b.', '')
 
 
-def preprocess_requirements(requirements, enable_pos_tagging=False, enable_lemmatization=False, enable_stemming=False):
+def _remove_english_abbreviations(requirements):
+    _logger.info("Remove abbreviations")
+    for requirement in requirements:
+        assert(isinstance(requirement, Requirement))
+        requirement.title = requirement.title.replace('e.g.', '')
+        requirement.title = requirement.title.replace('i.e.', '')
+        requirement.title = requirement.title.replace('in order to', '')
+        requirement.description = requirement.description.replace('e.g.', '')
+        requirement.description = requirement.description.replace('i.e.', '')
+        requirement.description = requirement.description.replace('in order to', '')
+
+
+def preprocess_requirements(requirements, enable_pos_tagging=False, enable_lemmatization=False, enable_stemming=False,
+                            lang="en"):
     _logger.info("Preprocessing requirements")
     requirements = list(requirements)
     assert(isinstance(requirements, list))
     assert(len(requirements) > 0)
 
     _to_lower_case(requirements)
-    _replace_german_umlauts(requirements)
-    _remove_abbreviations(requirements)
+    if lang == "de":
+        _replace_german_umlauts(requirements)
+    elif lang == "en":
+        _remove_english_abbreviations(requirements)
+
     all_requirement_titles = list(map(lambda requirement: requirement.title, requirements))
     important_key_words = tokenizer.key_words_for_tokenization(all_requirement_titles)
     _logger.info("Number of key words {} (altogether)".format(len(important_key_words)))
-    tokenizer.tokenize_requirements(requirements, important_key_words)
+    tokenizer.tokenize_requirements(requirements, important_key_words, lang=lang)
     n_tokens = reduce(lambda x, y: x + y, map(lambda t: len(list(t.title_tokens)) + len(list(t.description_tokens)), requirements))
     filters.filter_tokens(requirements, important_key_words)
-    stopwords.remove_stopwords(requirements)
+    stopwords.remove_stopwords(requirements, lang=lang)
 
     #-----------------------------------------------------------------------------------------------
     # NOTE: Both NLTK and Stanford POS-tagging is not working as good as expected, because we are
@@ -164,7 +180,7 @@ def preprocess_requirements(requirements, enable_pos_tagging=False, enable_lemma
     #-----------------------------------------------------------------------------------------------
     if enable_pos_tagging is True:
         _logger.warning("POS Tagging enabled!")
-        pos.pos_tagging(requirements)
+        pos.pos_tagging(requirements, lang=lang)
 
     #-----------------------------------------------------------------------------------------------
     # NOTE: it does not makes sense to use both lemmatization and stemming
@@ -172,7 +188,7 @@ def preprocess_requirements(requirements, enable_pos_tagging=False, enable_lemma
     #-----------------------------------------------------------------------------------------------
     if enable_lemmatization is True:
         _logger.warning("Lemmatization enabled!")
-        lemmatizer.word_net_lemmatizer(requirements)
+        lemmatizer.word_net_lemmatizer(requirements, lang=lang)
 
     if enable_stemming is True:
         _logger.warning("Stemming enabled!")

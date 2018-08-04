@@ -18,5 +18,5 @@ def test_svd():
 
 
 if __name__ == '__main__':
-    main()
-    #test_svd()
+    #main()
+    test_svd()

@@ -19,7 +19,7 @@ def key_words_for_tokenization(all_requirement_titles):
     return list(set(all_tokens))
 
 
-def tokenize_requirements(requirements, important_key_words):
+def tokenize_requirements(requirements, important_key_words, lang="en"):
     """
 
         Customized tokenizer for our special needs.
@@ -62,7 +62,7 @@ def tokenize_requirements(requirements, important_key_words):
     split_important_words_re = re.compile(r'(' + '|'.join(regex_str) + ')', re.VERBOSE | re.IGNORECASE)
     last_char_is_no_alphanum_re = re.compile(r'(\W)', re.VERBOSE | re.IGNORECASE)
 
-    def _tokenize_text(s, sorted_important_words_to_keep, split_important_words_re):
+    def _tokenize_text(s, sorted_important_words_to_keep, split_important_words_re, lang="en"):
         def _pre_tokenize_important_words(chunks, sorted_important_words_to_keep, split_important_words_re):
             """
                 Only looks and tokenizes for important words.
@@ -133,6 +133,8 @@ def tokenize_requirements(requirements, important_key_words):
 
         # pre- and append single whitespace character before and at the end of the string
         # This really makes the regular expressions a bit less complex
+        if lang == "en":
+            s = s.replace("'s", "")
         s = " {} ".format(s.lower()) # also lower case all letters
 
         # remove unicode characters
@@ -162,7 +164,7 @@ def tokenize_requirements(requirements, important_key_words):
 
     for requirement in requirements:
         requirement.title_tokens = _tokenize_text(requirement.title, sorted_important_key_words_to_keep,
-                                                  split_important_words_re)
+                                                  split_important_words_re, lang=lang)
         requirement.description_tokens = _tokenize_text(requirement.description, sorted_important_key_words_to_keep,
-                                                        split_important_words_re)
+                                                        split_important_words_re, lang=lang)
 

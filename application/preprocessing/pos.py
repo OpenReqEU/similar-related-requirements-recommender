@@ -7,22 +7,22 @@ from nltk.tag.stanford import StanfordPOSTagger
 from application.util import helper
 
 pos_tagger_dir = os.path.join(helper.APP_PATH, 'postagger')
-pos_tagger_data_path = os.path.join(pos_tagger_dir, 'models', 'english-bidirectional-distsim.tagger')
 pos_tagger_jar_path = os.path.join(pos_tagger_dir, 'stanford-postagger.jar')
 nltk.data.path = [os.path.join(helper.APP_PATH, "corpora", "nltk_data")]
 
 _logger = logging.getLogger(__name__)
 
 
-def pos_tagging(requirements):
-    '''
+def pos_tagging(requirements, lang="en"):
+    """
         POS-Tagging via Stanford POS tagger
         NOTE: This library creates a Java process in the background.
               Please make sure you have installed Java 1.6 or higher.
 
               sudo apt-get install default-jre
               sudo apt-get install default-jdk
-    '''
+    """
+
     _logger.info("Pos-tagging for requirements' tokens")
 
     '''
@@ -131,24 +131,31 @@ def pos_tagging(requirements):
     removed_stanford_tokens = set()
     # Note: "-mx30g" sets java's max memory size to 30 GB RAM
     #       Please change when experiencing OS-related problems!
+
+    if lang == "en":
+        pos_tagger_data_path = os.path.join(pos_tagger_dir, 'models', 'english-bidirectional-distsim.tagger')
+    elif lang == "de":
+        pos_tagger_data_path = os.path.join(pos_tagger_dir, 'models', 'german-ud.tagger')
+
+    pos_tags_black_list = ['CC', 'CD', 'DT', 'EX', 'IN', 'LS', 'MD', 'PDT', 'POS', 'PRP', 'PRP$', 'RP', 'TO', 'UH', 'VBZ', 'WDT', 'WP', 'WP$', 'WRB']
+    #pos_tags_black_list = ['CC', 'CD', 'DT', 'EX', 'LS', 'MD', 'PDT', 'POS', 'PRP', 'PRP$', 'RP', 'TO', 'UH', 'WDT', 'WP', 'WP$', 'WRB']
+    existing_stanford_pos_tags = set()
+    removed_stanford_tokens = set()
+    # Note: "-mx30g" sets java's max memory size to 30 GB RAM
+    #       Please change when experiencing OS-related problems!
     pos_tagger = StanfordPOSTagger(pos_tagger_data_path, pos_tagger_jar_path, java_options='-mx30g')
 
-    def restore_german_umlauts(tokens):
-        return map(lambda t: t.replace("ue", "ü").replace("oe", "ö").replace("ae", "ä"), tokens)
-
     for requirement in requirements:
-        corrected_words = restore_german_umlauts(requirement.description_tokens)
-        pos_tagged_requirement_tokens = pos_tagger.tag(corrected_words)
+        pos_tagged_requirement_tokens = pos_tagger.tag(requirement.description_tokens)
         #tagged_tokens = filter(lambda t: t[1] not in pos_tags_black_list, pos_tagged_requirement_tokens)
-        #requirement.description_tokens_pos_tags = map(lambda t: t, tagged_tokens)
-        requirement.description_tokens_pos_tags = map(lambda t: t, pos_tagged_requirement_tokens)
+        #requirement.description_tokens_pos_tags = list(map(lambda t: t, tagged_tokens))
+        requirement.description_tokens_pos_tags = list(map(lambda t: t, pos_tagged_requirement_tokens))
         #removed_stanford_tokens |= set(filter(lambda t: t[1] in pos_tags_black_list, pos_tagged_requirement_tokens))
         #existing_stanford_pos_tags |= set(map(lambda t: t[1], pos_tagged_requirement_tokens))
 
-        corrected_words = restore_german_umlauts(requirement.title_tokens)
-        pos_tagged_title_tokens = pos_tagger.tag(corrected_words)
+        pos_tagged_title_tokens = pos_tagger.tag(requirement.title_tokens)
         #tagged_tokens = filter(lambda t: t[1] not in pos_tags_black_list, pos_tagged_title_tokens)
-        #requirement.title_tokens_pos_tags = map(lambda t: t, tagged_tokens)
-        requirement.title_tokens_pos_tags = map(lambda t: t, pos_tagged_title_tokens)
+        #requirement.title_tokens_pos_tags = list(map(lambda t: t, tagged_tokens))
+        requirement.title_tokens_pos_tags = list(map(lambda t: t, pos_tagged_title_tokens))
         #removed_stanford_tokens |= set(filter(lambda t: t[1] in pos_tags_black_list, pos_tagged_title_tokens))
         #existing_stanford_pos_tags |= set(map(lambda t: t[1], pos_tagged_title_tokens))

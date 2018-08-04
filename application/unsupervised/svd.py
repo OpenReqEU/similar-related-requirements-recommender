@@ -181,8 +181,7 @@ def svd2(X_train, y_train, X_test, y_test, y_test_dependency_ids, requirements_m
 """
 
 
-def svd(train_requirements, predict_requirements, k=3):
-    MAX_DISTANCE_THRESHOLD = 0.2
+def svd(train_requirements, predict_requirements, k=3, max_distance=0.2):
     X_train = list(map(lambda r: ' '.join(map(lambda t: t.lower(), r.tokens(title_weight=1, description_weight=1))), train_requirements))
     X_predict = list(map(lambda r: ' '.join(map(lambda t: t.lower(), r.tokens(title_weight=1, description_weight=1))), predict_requirements))
 
@@ -209,7 +208,7 @@ def svd(train_requirements, predict_requirements, k=3):
         n_recommended_dependencies = 0
         predictions = []
         for idx, similar_requirement_idx in enumerate(similar_train_requirement_idx):
-            if n_recommended_dependencies >= k and p_similar_requirements[idx] > MAX_DISTANCE_THRESHOLD:
+            if n_recommended_dependencies >= k or p_similar_requirements[idx] > max_distance:
                 break
 
             similar_requirement = train_requirements[similar_requirement_idx]
