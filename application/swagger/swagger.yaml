@@ -61,8 +61,6 @@ definitions:
         type: "string"
       description:
         type: "string"
-      predict:
-        type: "boolean"
       predictions:
         type: "array"
         items:

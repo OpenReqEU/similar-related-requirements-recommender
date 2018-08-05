@@ -36,50 +36,40 @@ def recommend_similar_requirements(body):  # noqa: E501
         assert isinstance(content, list)
         requs = [Requirement.from_dict(d) for d in content]  # noqa: E501
 
-        train_requirements = list(filter(lambda r: not r.predict, requs))
-        predict_requirements = list(filter(lambda r: r.predict, requs))
-
-        train_requs = map(lambda r: requirement.Requirement(r.id, r.title, r.description), train_requirements)
-        predict_requs = map(lambda r: requirement.Requirement(r.id, r.title, r.description), predict_requirements)
-        train_requs = preprocessing.preprocess_requirements(train_requs,
-                                                            enable_pos_tagging=True,
-                                                            enable_lemmatization=True,
-                                                            enable_stemming=False,
-                                                            lang=lang)
-        predict_requs = preprocessing.preprocess_requirements(predict_requs,
-                                                              enable_pos_tagging=True,
-                                                              enable_lemmatization=True,
-                                                              enable_stemming=False,
-                                                              lang=lang)
+        requs = map(lambda r: requirement.Requirement(r.id, r.title, r.description), requs)
+        requs = preprocessing.preprocess_requirements(requs,
+                                                      enable_pos_tagging=False,
+                                                      enable_lemmatization=False,
+                                                      enable_stemming=False,
+                                                      lang=lang)
 
         _logger.info("SVD...")
 
-        if len(train_requs) > 100:
-            max_distance = 0.1
+        if len(requs) > 100:
+            max_distance = 0.4
             k = 10
-        elif len(train_requs) > 50:
-            max_distance = 0.2
+        elif len(requs) > 50:
+            max_distance = 0.5
             k = 8
-        elif len(train_requs) > 30:
-            max_distance = 0.25
+        elif len(requs) > 30:
+            max_distance = 0.55
             k = 5
-        elif len(train_requs) > 10:
-            max_distance = 0.3
+        elif len(requs) > 10:
+            max_distance = 0.6
             k = 3
-        elif len(train_requs) > 5:
-            max_distance = 0.35
+        elif len(requs) > 5:
+            max_distance = 0.6
             k = 2
         else:
-            max_distance = 0.4
+            max_distance = 0.6
             k = 1
 
-        predictions_map = svd.svd(train_requs, predict_requs, k=k, max_distance=max_distance)
+        predictions_map = svd.svd(requs, k=k, max_distance=max_distance)
         for subject_requirement, similar_requirements in predictions_map.items():
             requ = Requirement.from_dict({
                 "id": subject_requirement.id,
                 "title": subject_requirement.title,
-                "description": subject_requirement.description,
-                "predict": True
+                "description": subject_requirement.description
             })
             requ.predictions = list(set(map(lambda r: r.id, similar_requirements)))
             response_list += [requ]
@@ -111,47 +101,39 @@ def csv_reader(file_content):
 
 def perform_svd():
     enable_tagging = True
-    max_distance = 0.35
+    max_distance = 0.6
     with open(os.path.join(helper.APP_PATH, "data", "requirements_en.json")) as f:
         requs = json.load(f)
 
-    """
-    max_distance = 0.005
+    max_distance = 0.4
     with open(os.path.join(helper.APP_PATH, "data", "siemens_requirements_en.csv")) as f:
         enable_tagging = False
         plain_requirements = csv_reader(f)
         requs = []
-        predict_requirements_idx = len(plain_requirements) - int(len(plain_requirements) * 0.2)
         for (idx, description) in enumerate(plain_requirements):
+            if idx > 400:
+                break
             requs += [{
                 'id': idx,
                 'title': '',
-                'description': description,
-                'predict': idx > predict_requirements_idx
+                'description': description
             }]
-    """
+    #print(json.dumps(requs))
+    #import sys;sys.exit()
 
     #pprint(requs)
     requs = list(map(lambda r: Requirement.from_dict(r), requs))
-    train_requirements = list(filter(lambda r: not r.predict, requs))
-    predict_requirements = list(filter(lambda r: r.predict, requs))
     lang = "en"
 
-    train_requs = map(lambda r: requirement.Requirement(r.id, r.title, r.description), train_requirements)
-    predict_requs = map(lambda r: requirement.Requirement(r.id, r.title, r.description), predict_requirements)
-    train_requs = preprocessing.preprocess_requirements(train_requs,
-                                                        enable_pos_tagging=enable_tagging,
-                                                        enable_lemmatization=enable_tagging,
-                                                        enable_stemming=False,
-                                                        lang=lang)
-    predict_requs = preprocessing.preprocess_requirements(predict_requs,
-                                                          enable_pos_tagging=enable_tagging,
-                                                          enable_lemmatization=enable_tagging,
-                                                          enable_stemming=False,
-                                                          lang=lang)
+    requs = map(lambda r: requirement.Requirement(r.id, r.title, r.description), requs)
+    requs = preprocessing.preprocess_requirements(requs,
+                                                  enable_pos_tagging=enable_tagging,
+                                                  enable_lemmatization=enable_tagging,
+                                                  enable_stemming=False,
+                                                  lang=lang)
 
     _logger.info("SVD...")
-    predictions_map = svd.svd(train_requs, predict_requs, k=3, max_distance=max_distance)
+    predictions_map = svd.svd(requs, k=3, max_distance=max_distance)
     for subject_requirement, similar_requirements in predictions_map.items():
         if len(similar_requirements) == 0:
             continue

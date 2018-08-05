@@ -181,34 +181,37 @@ def svd2(X_train, y_train, X_test, y_test, y_test_dependency_ids, requirements_m
 """
 
 
-def svd(train_requirements, predict_requirements, k=3, max_distance=0.2):
+def svd(train_requirements, k=3, max_distance=0.2):
     X_train = list(map(lambda r: ' '.join(map(lambda t: t.lower(), r.tokens(title_weight=1, description_weight=1))), train_requirements))
-    X_predict = list(map(lambda r: ' '.join(map(lambda t: t.lower(), r.tokens(title_weight=1, description_weight=1))), predict_requirements))
 
     warnings.filterwarnings("ignore", category=DeprecationWarning, module="pandas", lineno=570)
     vectorizer = CountVectorizer(min_df=1) #TfidfVectorizer(min_df=1, ngram_range=(1,1))
     document_term_matrix = vectorizer.fit_transform(X_train)
+    n_total_tokens = document_term_matrix.shape[1]
+    n_components = min(int(n_total_tokens / 3), 300)
+    print("Desired components: {}".format(n_components))
 
-    lsa = TruncatedSVD(n_components=20, algorithm='randomized', n_iter=300, random_state=1)
+    lsa = TruncatedSVD(n_components=n_components, algorithm='randomized', n_iter=300, random_state=1)
     document_term_matrix_lsa = lsa.fit_transform(document_term_matrix)
+    print("Actual components: {}".format(document_term_matrix_lsa.shape[1]))
     #document_term_matrix_lsa = Normalizer(copy=False).fit_transform(document_term_matrix_lsa)
 
     predictions_for_requirements = {}
-    for idx, x_test in enumerate(X_predict):
-        document_term_test_matrix = vectorizer.transform([x_test])
-        test_requirement_document = document_term_test_matrix
-        # transform document into semantic space
-        subject_requirement = predict_requirements[idx]
-        transformed_requirement = lsa.transform(test_requirement_document)
-        distance_matrix = pairwise_distances(transformed_requirement, document_term_matrix_lsa, metric='cosine', n_jobs=1)
+    for subject_requirement_idx, transfered_requirement in enumerate(document_term_matrix_lsa):
+        transfered_requirement = np.array([transfered_requirement])
+        distance_matrix = pairwise_distances(transfered_requirement, document_term_matrix_lsa, metric='cosine', n_jobs=1)
 
         p_similar_requirements = np.sort(distance_matrix[0])
         similar_train_requirement_idx = np.argsort(distance_matrix[0])
 
         n_recommended_dependencies = 0
         predictions = []
-        for idx, similar_requirement_idx in enumerate(similar_train_requirement_idx):
-            if n_recommended_dependencies >= k or p_similar_requirements[idx] > max_distance:
+        subject_requirement = train_requirements[subject_requirement_idx]
+        for inner_idx, similar_requirement_idx in enumerate(similar_train_requirement_idx):
+            if subject_requirement_idx == similar_requirement_idx:
+                continue
+
+            if n_recommended_dependencies >= k or p_similar_requirements[inner_idx] > max_distance:
                 break
 
             similar_requirement = train_requirements[similar_requirement_idx]
