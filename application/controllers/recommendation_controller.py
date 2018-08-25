@@ -4,6 +4,7 @@ import logging
 import json
 import os
 import csv
+import functools
 from application.models.requirement import Requirement  # noqa: E501
 from application.entities import requirement
 from application.preprocessing import preprocessing
@@ -43,6 +44,11 @@ def recommend_similar_requirements(body):  # noqa: E501
                                                       enable_stemming=False,
                                                       lang=lang)
 
+        requs = list(filter(lambda r: len(r.tokens()) > 0, requs))
+
+        if len(requs) == 0:
+            return []
+
         _logger.info("SVD...")
 
         if len(requs) > 100:
@@ -65,13 +71,28 @@ def recommend_similar_requirements(body):  # noqa: E501
             k = 1
 
         predictions_map = svd.svd(requs, k=k, max_distance=max_distance)
+        predictions = {}
+
+        for subject_requirement, similar_requirements in predictions_map.items():
+            rx = subject_requirement.id
+            rx_predictions = list(set(map(lambda r: r.id, similar_requirements)))
+            if rx not in predictions:
+                predictions[rx] = set()
+            predictions[rx] = predictions[rx].union(rx_predictions)
+
+            for ry in rx_predictions:
+                if ry not in predictions:
+                    predictions[ry] = set()
+                predictions[ry].add(rx)
+
         for subject_requirement, similar_requirements in predictions_map.items():
             requ = Requirement.from_dict({
                 "id": subject_requirement.id,
                 "title": subject_requirement.title,
                 "description": subject_requirement.description
             })
-            requ.predictions = list(set(map(lambda r: r.id, similar_requirements)))
+            rx = subject_requirement.id
+            requ.predictions = list(predictions[rx])
             response_list += [requ]
             for similar_requirement in similar_requirements:
                 print("{} -> {}".format(subject_requirement, similar_requirement))

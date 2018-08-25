@@ -189,8 +189,11 @@ def svd(train_requirements, k=3, max_distance=0.2):
     document_term_matrix = vectorizer.fit_transform(X_train)
     n_total_tokens = document_term_matrix.shape[1]
     n_components = min(int(n_total_tokens / 3), 300)
-    print("Desired components: {}".format(n_components))
 
+    if n_components == 0:
+        return {}
+
+    print("Desired components: {}".format(n_components))
     lsa = TruncatedSVD(n_components=n_components, algorithm='randomized', n_iter=300, random_state=1)
     document_term_matrix_lsa = lsa.fit_transform(document_term_matrix)
     print("Actual components: {}".format(document_term_matrix_lsa.shape[1]))
