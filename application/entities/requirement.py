@@ -6,7 +6,7 @@ _logger = logging.getLogger(__name__)
 
 
 class Requirement(object):
-    def __init__(self, id, title, description):
+    def __init__(self, id, title, description, comments):
         self.id = int(id)
         self.title = title
         self.description = description
@@ -14,6 +14,12 @@ class Requirement(object):
         self.description_tokens = []
         self.title_tokens_pos_tags = []
         self.description_tokens_pos_tags = []
+        self.comments = comments
+
+    def append_comments_to_description(self):
+        if self.comments is None or len(self.comments) == 0:
+            return
+        self.description += ' ' + ' '.join(self.comments)
 
     def tokens(self, title_weight=1, description_weight=1):
         return (list(self.title_tokens) * title_weight) + (list(self.description_tokens) * description_weight)

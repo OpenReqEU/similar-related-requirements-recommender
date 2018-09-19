@@ -23,7 +23,7 @@ def _deserialize(data, klass):
         return deserialize_date(data)
     elif klass == datetime.datetime:
         return deserialize_datetime(data)
-    elif type(klass) == typing.GenericMeta:
+    elif type(klass) == typing.Generic:
         if klass.__extra__ == list:
             return _deserialize_list(data, klass.__args__[0])
         if klass.__extra__ == dict:
@@ -108,7 +108,11 @@ def deserialize_model(data, klass):
                 and instance.attribute_map[attr] in data \
                 and isinstance(data, (list, dict)):
             value = data[instance.attribute_map[attr]]
-            setattr(instance, attr, _deserialize(value, attr_type))
+            # FIXME: HACK!!!
+            if attr in ("comments", "predictions"):
+                setattr(instance, attr, value)
+            else:
+                setattr(instance, attr, _deserialize(value, attr_type))
 
     return instance
 

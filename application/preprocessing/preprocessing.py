@@ -154,7 +154,6 @@ def _remove_english_abbreviations(requirements):
 def preprocess_requirements(requirements, enable_pos_tagging=False, enable_lemmatization=False, enable_stemming=False,
                             lang="en"):
     _logger.info("Preprocessing requirements")
-    requirements = list(requirements)
     assert(isinstance(requirements, list))
     assert(len(requirements) > 0)
 

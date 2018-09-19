@@ -1,10 +1,7 @@
 # coding: utf-8
 
 from __future__ import absolute_import
-from datetime import date, datetime  # noqa: F401
-
-from typing import List, Dict  # noqa: F401
-
+from typing import List  # noqa: F401
 from application.models.base_model_ import Model
 from application.util import util
 
@@ -15,7 +12,7 @@ class Requirement(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: int=None, title: str=None, description: str=None):  # noqa: E501
+    def __init__(self, id: int=None, title: str=None, description: str=None, comments: List[str]=None):  # noqa: E501
         """Requirement - a model defined in Swagger
 
         :param id: The id of this Requirement.  # noqa: E501
@@ -26,11 +23,14 @@ class Requirement(Model):
         :type description: str
         :param predictions: The predicted similar requirements of this Requirement.  # noqa: E501
         :type predictions: List[int]
+        :param comments: Comments added to this Requirement.  # noqa: E501
+        :type comments: List[str]
         """
         self.swagger_types = {
             'id': int,
             'title': str,
             'description': str,
+            'comments': list,
             'predictions': list
         }
 
@@ -38,12 +38,14 @@ class Requirement(Model):
             'id': 'id',
             'title': 'title',
             'description': 'description',
+            'comments': 'comments',
             'predictions': 'predictions'
         }
 
         self._id = id
         self._title = title
         self._description = description
+        self._comments = comments
         self._predictions = []
 
     @classmethod
@@ -119,6 +121,27 @@ class Requirement(Model):
         """
 
         self._description = description
+
+    @property
+    def comments(self) -> List[str]:
+        """Gets the predictions of this Requirement.
+
+
+        :return: The predictions of this Requirement.
+        :rtype: List[str]
+        """
+        return self._comments
+
+    @comments.setter
+    def comments(self, comments: []):
+        """Sets the comments attribute of this Requirement.
+
+
+        :param comments: The comments list attribute of this Requirement.
+        :type comments: List[str]
+        """
+
+        self._comments = comments
 
     @property
     def predictions(self) -> []:

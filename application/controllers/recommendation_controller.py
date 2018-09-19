@@ -37,7 +37,10 @@ def recommend_similar_requirements(body):  # noqa: E501
         assert isinstance(content, list)
         requs = [Requirement.from_dict(d) for d in content]  # noqa: E501
 
-        requs = map(lambda r: requirement.Requirement(r.id, r.title, r.description), requs)
+        requs = list(map(lambda r: requirement.Requirement(r.id, r.title, r.description, r.comments), requs))
+        for r in requs:
+            r.append_comments_to_description()
+
         requs = preprocessing.preprocess_requirements(requs,
                                                       enable_pos_tagging=False,
                                                       enable_lemmatization=False,
@@ -89,7 +92,8 @@ def recommend_similar_requirements(body):  # noqa: E501
             requ = Requirement.from_dict({
                 "id": subject_requirement.id,
                 "title": subject_requirement.title,
-                "description": subject_requirement.description
+                "description": subject_requirement.description,
+                "comments": subject_requirement.comments
             })
             rx = subject_requirement.id
             requ.predictions = list(predictions[rx])
@@ -146,7 +150,7 @@ def perform_svd():
     requs = list(map(lambda r: Requirement.from_dict(r), requs))
     lang = "en"
 
-    requs = map(lambda r: requirement.Requirement(r.id, r.title, r.description), requs)
+    requs = list(map(lambda r: requirement.Requirement(r.id, r.title, r.description), requs))
     requs = preprocessing.preprocess_requirements(requs,
                                                   enable_pos_tagging=enable_tagging,
                                                   enable_lemmatization=enable_tagging,
