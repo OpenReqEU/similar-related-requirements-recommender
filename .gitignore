@@ -63,3 +63,5 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 siemens_requirements_en.csv
+encodings.xml
+workspace.xml
