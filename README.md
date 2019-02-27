@@ -1,4 +1,4 @@
-# Issue Recommendation Service for Eclipse Plugin [![EPL 2.0](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://www.eclipse.org/legal/epl-2.0/)
+# Requirement Similarity Detection Service [![EPL 2.0](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://www.eclipse.org/legal/epl-2.0/)
 
 This service was created as a result of the OpenReq project funded by the European Union Horizon 2020 Research and Innovation programme under grant agreement No 732463.
 This project uses the [Connexion](https://github.com/zalando/connexion) library on top of Flask.
