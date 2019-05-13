@@ -65,6 +65,8 @@ The Swagger definition lives here:
 http://217.172.12.199:9006/swagger.json
 ```
 
+[Rendered Documentation](https://api.openreq.eu/#/services/similar-related-requirements-recommender)
+
 ### Notes for developers
 None.
 
