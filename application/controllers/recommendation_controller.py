@@ -41,11 +41,7 @@ def recommend_similar_requirements(body):  # noqa: E501
         for r in requs:
             r.append_comments_to_description()
 
-        requs = preprocessing.preprocess_requirements(requs,
-                                                      enable_pos_tagging=False,
-                                                      enable_lemmatization=False,
-                                                      enable_stemming=False,
-                                                      lang=lang)
+        requs = preprocessing.preprocess_requirements(requs, enable_stemming=False, lang=lang)
 
         requs = list(filter(lambda r: len(r.tokens()) > 0, requs))
 
@@ -151,11 +147,7 @@ def perform_svd():
     lang = "en"
 
     requs = list(map(lambda r: requirement.Requirement(r.id, r.title, r.description), requs))
-    requs = preprocessing.preprocess_requirements(requs,
-                                                  enable_pos_tagging=enable_tagging,
-                                                  enable_lemmatization=enable_tagging,
-                                                  enable_stemming=False,
-                                                  lang=lang)
+    requs = preprocessing.preprocess_requirements(requs, enable_stemming=False, lang=lang)
 
     _logger.info("SVD...")
     predictions_map = svd.svd(requs, k=3, max_distance=max_distance)

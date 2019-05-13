@@ -10,8 +10,6 @@ from application.preprocessing import tokenizer
 from application.preprocessing import filters
 from application.preprocessing import stopwords
 from application.preprocessing import stemmer
-from application.preprocessing import pos
-from application.preprocessing import lemmatizer
 
 
 _logger = logging.getLogger(__name__)
@@ -151,8 +149,7 @@ def _remove_english_abbreviations(requirements):
         requirement.description = requirement.description.replace('in order to', '')
 
 
-def preprocess_requirements(requirements, enable_pos_tagging=False, enable_lemmatization=False, enable_stemming=False,
-                            lang="en"):
+def preprocess_requirements(requirements, enable_stemming=False, lang="en"):
     _logger.info("Preprocessing requirements")
     assert(isinstance(requirements, list))
     assert(len(requirements) > 0)
@@ -170,24 +167,6 @@ def preprocess_requirements(requirements, enable_pos_tagging=False, enable_lemma
     n_tokens = reduce(lambda x, y: x + y, map(lambda t: len(list(t.title_tokens)) + len(list(t.description_tokens)), requirements))
     filters.filter_tokens(requirements, important_key_words)
     stopwords.remove_stopwords(requirements, lang=lang)
-
-    #-----------------------------------------------------------------------------------------------
-    # NOTE: Both NLTK and Stanford POS-tagging is not working as good as expected, because we are
-    #       getting a lot of wrong tags (e.g. NN instead of VB).
-    #       -> Outlook: use unsupervised POS-tagging (very time consuming to
-    #                   manually label enough training data...)
-    #-----------------------------------------------------------------------------------------------
-    if enable_pos_tagging is True:
-        _logger.warning("POS Tagging enabled!")
-        pos.pos_tagging(requirements, lang=lang)
-
-    #-----------------------------------------------------------------------------------------------
-    # NOTE: it does not makes sense to use both lemmatization and stemming
-    #       lemmatizer also requires pos_tagging beforehand!
-    #-----------------------------------------------------------------------------------------------
-    if enable_lemmatization is True:
-        _logger.warning("Lemmatization enabled!")
-        lemmatizer.word_net_lemmatizer(requirements, lang=lang)
 
     if enable_stemming is True:
         _logger.warning("Stemming enabled!")
